@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 struct file_map{
     char* mapped_mem;
     size_t seek;
@@ -17,6 +18,7 @@ struct file_map{
     int prot;
     int fd;
 };
+size_t get_file_size(int fd);
 errno_t init_file_map(struct file_map* out, int fd, size_t blocksize, void* dst, int prot, off_t seek);
 char get_byte_file_map(struct file_map* input);
 char put_byte_file_map(struct file_map* input, char new_byte);

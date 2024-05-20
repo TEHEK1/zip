@@ -4,14 +4,14 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
+
 #include <unistd.h>
 #include <memory.h>
 #include "file_manipulations.h"
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) < (b) ? (a) : (b))
 extern int errno;
-static size_t get_file_size(int fd){
+size_t get_file_size(int fd){
     struct stat fs;
     if (fstat(fd, &fs) == -1){
         return errno;
@@ -42,7 +42,7 @@ errno_t init_file_map(struct file_map* out, int fd, size_t blocksize, void* dst,
     else{
         out->block_start = pa_offset - out->blocksize;
     }
-    out->mapped_mem = mmap(dst, out->block_end - out->block_start, out->prot, MAP_PRIVATE, out->fd, out->block_start);
+    out->mapped_mem = mmap(dst, out->block_end - out->block_start, out->prot, MAP_SHARED, out->fd, out->block_start);
     return  0;
 }
 static errno_t update_file_map(struct file_map* out, off_t seek){
@@ -72,7 +72,7 @@ static errno_t update_file_map(struct file_map* out, off_t seek){
     else{
         out->block_start = pa_offset - out->blocksize;
     }
-    out->mapped_mem = mmap(out->mapped_mem, out->block_end - out->block_start, out->prot, MAP_PRIVATE, out->fd, out->block_start);
+    out->mapped_mem = mmap(out->mapped_mem, out->block_end - out->block_start, out->prot, MAP_SHARED, out->fd, out->block_start);
     return 0;
 }
 errno_t update_check_file_map(struct file_map* out){
