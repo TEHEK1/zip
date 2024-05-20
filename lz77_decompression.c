@@ -5,19 +5,19 @@
 #include <assert.h>
 #include "file_manipulations.h"
 #include "lz77_decompression.h"
-static void lz77_output_backref_by_file_buffer(struct file_buffer* output, size_t dist, size_t len){
-    update_check_file_buffer(output);
+static void lz77_output_backref_by_file_map(struct file_map* output, size_t dist, size_t len){
+    update_check_file_map(output);
     for (size_t i = 0; i < len; i++) {
         output->mapped_mem[output->seek] = output->mapped_mem[output->seek - dist];
         output->seek++;
     }
-    update_check_file_buffer(output);
+    update_check_file_map(output);
 }
-static inline void lz77_output_lit_by_file_buffer(struct file_buffer* output, char lit)
+static inline void lz77_output_lit_by_file_map(struct file_map* output, char lit)
 {
-    put_byte_file_buffer(output, lit);
+    put_byte_file_map(output, lit);
 }
-errno_t lz77_decompress_by_file_map(struct file_buffer* output, struct file_map* input){
+errno_t lz77_decompress_by_file_map(struct file_map* output, struct file_map* input){
     char cur_byte;
     while(input->seek < input->length){
         cur_byte = get_byte_file_map(input);
@@ -31,11 +31,11 @@ errno_t lz77_decompress_by_file_map(struct file_buffer* output, struct file_map*
                 for(int i = 0;i <10;i++)str_len[i] = 0;
                 for(int i = 0;(cur_byte = get_byte_file_map(input)) != ')' && i <10; i++)str_len[i] = cur_byte;
                 size_t len = strtol(str_len, NULL, 10);
-                lz77_output_backref_by_file_buffer(output, dist, len);
+                lz77_output_backref_by_file_map(output, dist, len);
 
             }
             else{
-                lz77_output_lit_by_file_buffer(output, cur_byte);
+                lz77_output_lit_by_file_map(output, cur_byte);
             }
         }
     }
@@ -44,17 +44,17 @@ errno_t lz77_decompress_by_file_map(struct file_buffer* output, struct file_map*
 errno_t lz77_decompress_by_fd(int output_fd, int input_fd, size_t blocksize) {
     int err = 0;
     struct file_map input;
-    struct file_buffer output;
+    struct file_map output;
     if((err = init_file_map(&input, input_fd, blocksize, NULL, PROT_READ, 0))){
         return err;
     }
-    if((err = init_file_buffer(&output, output_fd, blocksize, NULL, 0))){
+    if((err = init_file_map(&output, output_fd, blocksize, NULL, PROT_READ | PROT_WRITE, 0))){
         deinit_file_map(&input);
         return err;
     }
     lz77_decompress_by_file_map(&output, &input);
     deinit_file_map(&input);
-    deinit_file_buffer(&output);
+    deinit_file_map(&output);
 
     return 0;
 }

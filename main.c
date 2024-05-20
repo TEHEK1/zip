@@ -10,6 +10,7 @@
 #include "file_manipulations.h"
 #include "lz77_decompression.h"
 int main(int argc, char* argv[]) {
+    errno = 0;
 //    struct file_buffer output;
 //    struct file_map input;
     FILE* file_input = fopen("input.txt", "r");
