@@ -33,7 +33,7 @@ int init_file_map(struct file_map* out, int fd, size_t blocksize, void* dst, int
     }
     out->block_end = MIN(size, (size_t) pa_offset + out->blocksize);
     out->block_start = pa_offset;
-    if((out->mapped_mem = mmap(dst, out->block_end - out->block_start, out->prot, out->flags, out->fd, out->block_start))==MAP_FAILED){
+    if((out->mapped_mem = (char*)mmap(dst, out->block_end - out->block_start, out->prot, out->flags, out->fd, out->block_start))==MAP_FAILED){
         return errno;
     }
     return  0;
@@ -64,7 +64,7 @@ static int update_file_map(struct file_map* out, off_t seek){
     if(munmap(out->mapped_mem, out->block_end - out->block_start) < 0){
         return errno;
     }
-    if((out->mapped_mem = mmap(out->mapped_mem, out->block_end - out->block_start, out->prot, out->flags, out->fd, out->block_start))==MAP_FAILED){
+    if((out->mapped_mem = (char*)mmap(out->mapped_mem, out->block_end - out->block_start, out->prot, out->flags, out->fd, out->block_start))==MAP_FAILED){
         return errno;
     }
     return 0;

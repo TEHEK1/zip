@@ -52,28 +52,53 @@ $(OBJ_DIR)/%.o: %.c
 	$(CC) $(C_FLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
 #tests
-TEST_SOURCE := tests/test.c
+TEST_SOURCE := tests/test.cpp
 TEST_SOURCE_DIR := tests
 TEST_BINARY :=
+TEST_DEPEND_SOURCES := zip/arg_parsing.c zip/compress_zlib.c zip/compress.c file_manipulations.c unzip/decompress_zlib.c unzip/decompress.c
 
-
-output/tests/%.o: tests/%.c
+$(OUTPUT_DIR)/$(TEST_SOURCE:.cpp=.out):$(TEST_SOURCE) $(addprefix $(OBJ_DIR)/, $(TEST_DEPEND_SOURCES:.c=.o)) $(GTEST_SOURCES)
 	@mkdir -p $(@D)
-	$(CXX)  $(CXX_FLAGS) $(INCLUDE_DIRS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) -c $< -o $@
+	$(CXX)  $(CXX_FLAGS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) $(INCLUDE_DIRS) $(TEST_SOURCE) $(LIB_DIRS) $(LIBS)\
+ 		$(GTEST_SOURCES) $(addprefix $(OBJ_DIR)/, $(TEST_DEPEND_SOURCES:.c=.o)) -o $@
 
 
-#$(TESTS_DIR)/$(TEST_SOURCE:.c=.out): $(TEST_SOURCE)
-#	@mkdir -p $(@D)
-#	$(CXX)  $(CXX_FLAGS) $(INCLUDE_DIRS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) -c $< -o $@
 
 %.run: %.out
 	./$<
 
-debug:
-	@echo $(TESTS_DIR)/$(TEST_SOURCE:.c=.out)
+tests: $(OUTPUT_DIR)/$(TEST_SOURCE:.cpp=.run)
 
-tests: $(TESTS_DIR)/$(TEST_SOURCE:.c=.out)
+$(OBJ_DIR)/%.gcov:%.c
+	@echo $(OBJ_DIR)/$(TESTS_SOURCES_DIR)/
+	@mkdir -p $(@D)
+	$(CC) -ftest-coverage --coverage $(C_FLAGS) $(INCLUDE_DIRS) -c $< -o $*.o
 
+$(OBJ_DIR)/%.gcov:%.h
+	@echo $(OBJ_DIR)/$(TESTS_SOURCES_DIR)/
+	@mkdir -p $(@D)
+	$(CC) -ftest-coverage --coverage $(C_FLAGS) $(INCLUDE_DIRS) -c $< -o $*.o
+
+$(OBJ_DIR)/%.gcov:%.cpp
+	@mkdir -p $(@D)
+	$(CXX) -ftest-coverage --coverage $(CXX_FLAGS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) $(INCLUDE_DIRS) -c $< -o $*.o
+
+$(OBJ_DIR)/%.gcov:%.cc
+	@mkdir -p $(@D)
+	$(CXX) -ftest-coverage --coverage $(CXX_FLAGS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) $(INCLUDE_DIRS) -c $< -o $*.o
+
+coverage: $(addprefix $(OBJ_DIR)/, $(TEST_SOURCE:.cpp=.gcov)) $(addprefix $(OBJ_DIR)/, $(TEST_DEPEND_SOURCES:.c=.gcov)) $(addprefix $(OBJ_DIR)/, $(GTEST_SOURCES:.cc:.c=.gcov))
+	@mkdir -p $(@D)
+
+	$(CXX)  $(CXX_FLAGS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) $(INCLUDE_DIRS) $(TEST_SOURCE) $(LIB_DIRS) $(LIBS)\
+     		$(GTEST_SOURCES) $(TEST_DEPEND_SOURCES:.c=.o) -o $@.out
+	./$@.out
+	gcov tests/test.gcda
+
+seccoverage:$(TEST_SOURCE) $(TEST_DEPEND_SOURCES) $(GTEST_SOURCES)
+	@mkdir -p $(@D)
+	$(CXX) -ftest-coverage --coverage $(CXX_FLAGS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) $(INCLUDE_DIRS) $(TEST_SOURCE) $(LIB_DIRS) $(LIBS)\
+		$(GTEST_SOURCES) $(TEST_DEPEND_SOURCES) -o $@.out
 
 
 #Google test
@@ -93,6 +118,8 @@ $(GTEST_LIB): $(GTEST_OBJS)
 
 # Cleaning
 clean:
-	rm -f $(EXECUTABLES) $(addprefix $(OBJ_DIR)/, $(ZIP_SOURCES:.c=.o)) $(addprefix $(OBJ_DIR)/, $(UNZIP_SOURCES:.c=.o))
+	rm -f $(EXECUTABLES) $(addprefix $(OBJ_DIR)/, $(ZIP_SOURCES:.c=.o))\
+ 		$(addprefix $(OBJ_DIR)/, $(UNZIP_SOURCES:.c=.o)) $(TEST_DEPEND_SOURCES:.c=.gcov)\
+ 		$(TEST_DEPEND_SOURCES:.c=.gcno) *.gcov *.gcno
 
 .PHONY: clean zip unzip

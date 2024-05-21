@@ -49,12 +49,12 @@ static int blocksize_parse(struct arg_values* args, char *arg, struct argp_state
 static int argument_parse(struct arg_values* args, char *arg, struct argp_state *state){
     switch (state->arg_num) {
         case 0:
-            args->input_filename = malloc(strlen(arg) + 1);
+            args->input_filename = (char*)malloc(strlen(arg) + 1);
             if(!args->input_filename) {return ENOMEM;}
             memcpy(args->input_filename, arg, strlen(arg) + 1);
             break;
         case 1:
-            args->output_filename = malloc(strlen(arg) + 1);
+            args->output_filename = (char*)malloc(strlen(arg) + 1);
             if(!args->output_filename) {return ENOMEM;}
             memcpy(args->output_filename, arg, strlen(arg) + 1);
             break;
@@ -74,7 +74,7 @@ static int end_parse(__attribute__((unused)) struct arg_values* args, struct arg
 }
 
 static int option_parse(int key, char *arg, struct argp_state *state) {
-    struct arg_values *args = state->input;
+    struct arg_values *args = (struct arg_values *)state->input;
     int err;
     switch (key) {
         case 'b':
