@@ -1,16 +1,13 @@
-//
-// Created by Амир Кашапов on 18.05.2024.
-//
-
 #ifndef KASP_ARG_PARSING_H
 #define KASP_ARG_PARSING_H
 #include <errno.h>
-#include <stdlib.h>
-struct args{
+#include <stddef.h>
+
+struct arg_values{
     size_t blocksize;
     char verbose;
     char* input_filename;
     char* output_filename;
 };
-errno_t parse_args(int argc, char **argv, struct args *args);
+int arg_values_parse(int argc, char **argv, struct arg_values *args);
 #endif //KASP_ARG_PARSING_H

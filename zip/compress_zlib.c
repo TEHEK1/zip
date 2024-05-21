@@ -1,9 +1,5 @@
-//
-// Created by Амир Кашапов on 20.05.2024.
-//
-
 #include "compress_zlib.h"
-errno_t compress_zlib(struct file_map* output, struct file_map* input){
+int compress_zlib(struct file_map* output, struct file_map* input){
     z_stream strm;
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
@@ -17,12 +13,16 @@ errno_t compress_zlib(struct file_map* output, struct file_map* input){
     int flush; // Variable to control flushing
 
     do {
-        update_check_file_map(input);
+        if((ret = update_check_file_map(input))){
+            return ret;
+        }
         strm.avail_in = input->block_end - input->seek;
-        flush = get_file_size(input->fd) <= input->seek ? Z_FINISH : Z_NO_FLUSH;
+        flush = get_file_size(input->fd) <= input->block_end ? Z_FINISH : Z_NO_FLUSH;
         strm.next_in = (unsigned char*) input->mapped_mem + input->seek - input->block_start;
         do {
-            update_check_file_map(output);
+            if((ret = update_check_file_map(output))){
+                return ret;
+            }
             strm.avail_out = output->block_end - output->seek;
             strm.next_out = (unsigned char*) output->mapped_mem + output->seek - output->block_start;
             ret = deflate(&strm, flush);

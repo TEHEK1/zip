@@ -1,20 +1,13 @@
-#include "errno.h"
+#include <errno.h>
 #include <string.h>
-
 #include <stdio.h>
-#include <sys/file.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include "../defines.h"
-#include "../arg_parsing.h"
-#include "../file_manipulations.h"
+#include "arg_parsing.h"
 #include "decompress.h"
+
 int main(int argc, char* argv[]) {
     errno = 0;
-//    struct file_buffer output;
-//    struct file_map input;
-    struct args args;
-    parse_args(argc, argv, &args);
+    struct arg_values args;
+    arg_values_parse(argc, argv, &args);
     FILE* file_input = fopen(args.input_filename, "r");
     printf("%s\n%d\n", strerror(errno), errno);
     int fd_input = fileno(file_input);
@@ -26,5 +19,4 @@ int main(int argc, char* argv[]) {
 
     fclose(file_input);
     fclose(file_output);
-    debug("Hello");
 }
