@@ -31,7 +31,7 @@ int init_file_map(struct file_map* out, int fd, size_t blocksize, void* dst, int
         }
         size = pa_offset + (off_t) out->blocksize;
     }
-    out->block_end = MIN(size, (size_t) pa_offset + out->blocksize);
+    out->block_end = MIN(size, (off_t) (pa_offset + out->blocksize));
     out->block_start = pa_offset;
     if((out->mapped_mem = (char*)mmap(dst, out->block_end - out->block_start, out->prot, out->flags, out->fd, out->block_start))==MAP_FAILED){
         return errno;
@@ -50,13 +50,13 @@ static int update_file_map(struct file_map* out, off_t seek){
     if(out->length < out->seek){
         out->length = out->seek;
     }
-    if(size <= out->seek && out->prot & PROT_WRITE && out->flags & MAP_SHARED){
+    if((off_t)size <= out->seek && out->prot & PROT_WRITE && out->flags & MAP_SHARED){
         if(ftruncate(out->fd, pa_offset + (off_t) out->blocksize) < 0){
             return errno;
         }
         size = pa_offset + out->blocksize;
     }
-    else if(size <= out->seek){
+    else if((off_t)size <= out->seek){
         return EACCES;
     }
     out->block_end = MIN(size, (size_t)pa_offset + out->blocksize);

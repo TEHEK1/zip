@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "arg_parsing.h"
-#define EWRONG_BLOCK_SIZE (ELAST + 1)
-#define ENOT_ENOUGH_ARGUMENTS (ELAST + 2)
-#define ETOO_MUCH_ARGUMENTS (ELAST + 3)
+
 
 const char *argp_program_version = "zip 1.0";
 const char *argp_program_bug_address = "kasapovamir9@gmail.com";
