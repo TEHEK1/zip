@@ -128,7 +128,7 @@ TEST(TestFileManipulations, UpdateFile){
     FILE* file = fopen(test_filename, "w+");
     struct file_map test_file_map{};
     ASSERT_EQ(0, init_file_map(&test_file_map, fileno(file), blocksize, nullptr, PROT_WRITE, MAP_SHARED, blocksize));
-    ASSERT_EQ(0, update_check_file_map(&test_file_map));
+    ASSERT_EQ(0, update_check_file_map(&test_file_map, test_file_map.seek));
     ASSERT_EQ(blocksize - blocksize % sysconf(_SC_PAGE_SIZE), test_file_map.block_start);
     ASSERT_EQ(2 * (blocksize - blocksize % sysconf(_SC_PAGE_SIZE)), test_file_map.block_end);
     ASSERT_EQ(0, deinit_file_map(&test_file_map));

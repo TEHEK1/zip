@@ -69,7 +69,8 @@ static int update_file_map(struct file_map* out, off_t seek){
     }
     return 0;
 }
-int update_check_file_map(struct file_map* out){
+int update_check_file_map(struct file_map* out, off_t length){
+    out->seek = length;
     if(out->seek > out->length){
         out->length = out->seek;
     }
@@ -79,7 +80,7 @@ int update_check_file_map(struct file_map* out){
     return 0;
 }
 int deinit_file_map(struct file_map* out){
-    if(update_check_file_map(out)) {
+    if(update_check_file_map(out, out->seek)) {
         return EOF;
     }
     if(out->prot & PROT_WRITE && out->flags & MAP_SHARED) {

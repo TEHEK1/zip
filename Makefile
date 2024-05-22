@@ -8,7 +8,9 @@ OBJ_DIR ?= $(OUTPUT_DIR)/obj
 # Setting compiler and flags
 CC ?= gcc
 CXX ?= g++
-C_FLAGS += -Wall -Wextra -g -Wno-implicit-fallthrough
+#Security flags
+C_SECURITY_FLAGS = -fstack-protector-strong -fPIE
+C_FLAGS += -Wall -Wextra -Wno-implicit-fallthrough $(C_SECURITY_FLAGS)
 CXX_FLAGS += -std=c++17
 
 ifdef sanitize
@@ -24,7 +26,8 @@ Z_LIB_DIRS ?=
 LIB_DIRS := $(ARGP_LIB_DIRS) $(Z_LIB_DIRS)
 
 ARGP_INCLUDE_DIRS ?= 
-INCLUDE_DIRS := -Iinclude $(ARGP_INCLUDE_DIRS)
+Z_INCLUDE_DIRS ?= 
+INCLUDE_DIRS := -Iinclude $(ARGP_INCLUDE_DIRS) $(Z_INCLUDE_DIRS)
 
 EXECUTABLE1 := $(BINARY_DIR)/zip
 EXECUTABLE2 := $(BINARY_DIR)/unzip
@@ -34,7 +37,7 @@ EXECUTABLES := $(EXECUTABLE1) $(EXECUTABLE2)
 ZIP_SOURCES = zip/main.c zip/arg_parsing.c file_manipulations.c zip/compress_zlib.c zip/compress.c
 UNZIP_SOURCES = unzip/main.c unzip/arg_parsing.c file_manipulations.c unzip/decompress_zlib.c unzip/decompress.c
 
-# Rules
+.PHONY: build
 build: $(EXECUTABLES)
 
 $(EXECUTABLE1): $(addprefix $(OBJ_DIR)/, $(ZIP_SOURCES:.c=.o))
@@ -64,6 +67,7 @@ $(OUTPUT_DIR)/$(TEST_SOURCE:.cpp=.out):$(TEST_SOURCE) $(addprefix $(OBJ_DIR)/, $
 %.run: %.out
 	./$<
 
+.PHONY: tests
 tests: $(OUTPUT_DIR)/$(TEST_SOURCE:.cpp=.run)
 
 $(OBJ_DIR)/%.gcov:%.c
@@ -79,6 +83,7 @@ $(OBJ_DIR)/%.gcov:%.cc
 	@mkdir -p $(@D)
 	$(CXX) -ftest-coverage --coverage $(CXX_FLAGS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) $(INCLUDE_DIRS) -c $< -o $*.o
 
+.PHONY: analyze
 coverage: $(addprefix $(OBJ_DIR)/, $(TEST_SOURCE:.cpp=.gcov)) $(addprefix $(OBJ_DIR)/, $(TEST_DEPEND_SOURCES:.c=.gcov)) $(addprefix $(OBJ_DIR)/, $(GTEST_SOURCES:.cc:.c=.gcov))
 	@mkdir -p $(@D)
 	$(CXX) -ftest-coverage --coverage  $(CXX_FLAGS) $(GTEST_FLAGS) $(GTEST_INCLUDE_DIRS) $(INCLUDE_DIRS) $(TEST_SOURCE) $(LIB_DIRS)  $(GTEST_SOURCES) $(TEST_DEPEND_SOURCES:.c=.o) -o $@.out $(LIBS)
@@ -86,6 +91,12 @@ coverage: $(addprefix $(OBJ_DIR)/, $(TEST_SOURCE:.cpp=.gcov)) $(addprefix $(OBJ_
 	gcov coverage.out-gtest-all.gcno
 	lcov --capture --directory . --output-file coverage.info
 	genhtml coverage.info --output-directory out
+
+.PHONY: analyze
+analyze: $(addprefix $(OBJ_DIR)/, $(ZIP_SOURCES:.c=.o))
+	#clang-tidy $(ZIP_SOURCES) -- $(C_FLAGS) $(INCLUDE_DIRS)
+	@mkdir -p out
+	cppcheck $(INCLUDE_DIRS) $(ZIP_SOURCES) #-- $(C_FLAGS)
 
 #Google test
 GTEST_DIR ?= ./googletest/googletest
@@ -103,6 +114,7 @@ $(GTEST_LIB): $(GTEST_OBJS)
 	ar -rv $(GTEST_LIB) $(GTEST_OBJS)
 
 # Cleaning
+.PHONY: clean
 clean:
 	rm -rf $(EXECUTABLES) $(addprefix $(OBJ_DIR)/, $(ZIP_SOURCES:.c=.o))\
  		$(addprefix $(OBJ_DIR)/, $(UNZIP_SOURCES:.c=.o)) $(TEST_DEPEND_SOURCES:.c=.gcov)\

@@ -13,14 +13,14 @@ int compress_zlib(struct file_map* output, struct file_map* input){
     int flush; // Variable to control flushing
 
     do {
-        if((ret = update_check_file_map(input))){
+        if((ret = update_check_file_map(input, input->seek))){
             return ret;
         }
         strm.avail_in = input->block_end - input->seek;
         flush = get_file_size(input->fd) <= input->block_end ? Z_FINISH : Z_NO_FLUSH;
         strm.next_in = (unsigned char*) input->mapped_mem + input->seek - input->block_start;
         do {
-            if((ret = update_check_file_map(output))){
+            if((ret = update_check_file_map(output, output->seek))){
                 return ret;
             }
             strm.avail_out = output->block_end - output->seek;

@@ -11,7 +11,7 @@ int decompress_zlib(struct file_map *output, struct file_map *input) {
         return 1;
     }
     do {
-        if((ret = update_check_file_map(input))){
+        if((ret = update_check_file_map(input, input->seek))){
             return ret;
         }
         strm.avail_in = input->block_end - input->seek;
@@ -20,10 +20,10 @@ int decompress_zlib(struct file_map *output, struct file_map *input) {
         }
         strm.next_in = (unsigned char *) input->mapped_mem + input->seek - input->block_start;
         do {
-            if((ret = update_check_file_map(output))){
+            if((ret = update_check_file_map(output, output->seek))){
                 return ret;
             }
-            strm.avail_out = output->blocksize;
+            strm.avail_out = output->block_end - output->seek;
             strm.next_out = (unsigned char *) output->mapped_mem + output->seek - output->block_start;
             ret = inflate(&strm, Z_NO_FLUSH);
             switch (ret) {

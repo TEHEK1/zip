@@ -17,6 +17,6 @@ struct file_map{
 };
 off_t get_file_size(int fd);
 int init_file_map(struct file_map* out, int fd, size_t blocksize, void* dst, int prot, int flags, off_t seek);
-int update_check_file_map(struct file_map* out);
+int update_check_file_map(struct file_map* out, off_t length);
 int deinit_file_map(struct file_map* out);
 #endif //KASP_FILE_MANIPULATIONS_H
