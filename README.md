@@ -80,11 +80,21 @@ unzip [-v] <archive_file> <output_file>
 2. **Open the report:**
    * `out/index.html`
 
+## Analyzing
+
+1. **Generate coverage report:**
+   ```bash
+   make analyze
+   ```
+2. **Open the report:**
+   * `out/static-anlyze.txt`
+
 ## Security
    **Функции-антиотдладчики**
    1. SEH_handler - выполняется в случае получения SIGTRAP, который вызывается, когда флаг trap установлен
    2. is_ptraced_proc - проверяет /proc/self/status на запись трассировщика
    3. is_ptraced_syscall - проверяет, соовпадают ли родительский PID, полученный с помощью getppid и полученный с помощью прямого системного вызова
+   
    **Опции компилятора**
    1. -fstack-protector-strong - добавляет канарейку во все функции, в которых происходит присваивание локальной переменной
    2. -fPIE - рандомизирует расположение секций в памяти, что усложняет злоумышленнику нахождение необходимой информации

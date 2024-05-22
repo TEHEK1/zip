@@ -96,7 +96,7 @@ coverage: $(addprefix $(OBJ_DIR)/, $(TEST_SOURCE:.cpp=.gcov)) $(addprefix $(OBJ_
 analyze: $(addprefix $(OBJ_DIR)/, $(ZIP_SOURCES:.c=.o))
 	#clang-tidy $(ZIP_SOURCES) -- $(C_FLAGS) $(INCLUDE_DIRS)
 	@mkdir -p out
-	cppcheck $(INCLUDE_DIRS) $(ZIP_SOURCES) #-- $(C_FLAGS)
+	cppcheck $(INCLUDE_DIRS) $(ZIP_SOURCES) &> out/static-anlyze.txt
 
 #Google test
 GTEST_DIR ?= ./googletest/googletest
@@ -119,6 +119,6 @@ clean:
 	rm -rf $(EXECUTABLES) $(addprefix $(OBJ_DIR)/, $(ZIP_SOURCES:.c=.o))\
  		$(addprefix $(OBJ_DIR)/, $(UNZIP_SOURCES:.c=.o)) $(TEST_DEPEND_SOURCES:.c=.gcov)\
  		$(TEST_DEPEND_SOURCES:.c=.gcno) $(TEST_DEPEND_SOURCES:.c=.gcda) $(TEST_DEPEND_SOURCES:.c=.o) *.gcov *.gcno *.gcda \
-		$(TEST_SOURCE:.cpp=.gcno) $(TEST_SOURCE:.cpp=.o) coverage.info coverage.out out
+		$(TEST_SOURCE:.cpp=.gcno) $(TEST_SOURCE:.cpp=.o) coverage.info coverage.out
 
 .PHONY: clean zip unzip
